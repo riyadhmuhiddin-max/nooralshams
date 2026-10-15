@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر نور الشمس ☀️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #FFA000; --primary-dark: #FF8F00; --bg: #F9FAFB; --text: #111827; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); }
+        header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 1rem 2rem; position: sticky; top: 0; z-index: 100; }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); text-decoration: none; }
+        .cart-btn { background: var(--bg); border: 1px solid #E5E7EB; padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .cart-count { background: var(--primary); color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+        main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .page-title { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .page-subtitle { color: #6B7280; margin-bottom: 2rem; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
+        .product-card { background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #F3F4F6; transition: all 0.3s; cursor: pointer; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-color: var(--primary); }
+        .product-image { width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; background: #F9FAFB; }
+        .product-emoji { font-size: 4rem; text-align: center; padding: 2rem 0; background: #F9FAFB; border-radius: 12px; margin-bottom: 1rem; }
+        .product-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .product-price { font-size: 1.25rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 1rem; }
+        .add-to-cart { width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; }
+        .add-to-cart:hover { background: var(--primary-dark); }
+        .toast { position: fixed; bottom: 20px; left: 20px; background: #10B981; color: white; padding: 1rem 1.5rem; border-radius: 8px; font-weight: 600; transform: translateY(100px); transition: transform 0.3s; }
+        .toast.show { transform: translateY(0); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">☀️ متجر نور الشمس</a>
+            <a href="cart.html" class="cart-btn">🛒 السلة <span class="cart-count" id="cartCount">0</span></a>
+        </div>
+    </header>
+    <main>
+        <h1 class="page-title">أحدث المنتجات</h1>
+        <p class="page-subtitle">أفضل الأجهزة الإلكترونية بأفضل الأسعار في العراق مع ضمان معتمد</p>
+        <div class="products-grid" id="productsContainer"></div>
+    </main>
+    <div class="toast" id="toast">✅ تمت الإضافة إلى السلة!</div>
+
+    <script>
+        const defaultProducts = [
+            { id: 1, name: "آيفون 15 برو ماكس 256GB", price: 1750000, emoji: "📱", image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500", category: "الهواتف", stock: 15, desc: "أحدث هواتف آبل بشريحة A17 Pro." },
+            { id: 2, name: "سامسونج جالاكسي S24 ألترا", price: 1650000, emoji: "📱", image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500", category: "الهواتف", stock: 20, desc: "قوة الذكاء الاصطناعي بين يديك." },
+            { id: 3, name: "ماك بوك برو M3 14 بوصة", price: 2100000, emoji: "💻", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500", category: "اللابتوبات", stock: 8, desc: "أداء خارق للمحترفين." },
+            { id: 4, name: "سماعات سوني WH-1000XM5", price: 450000, emoji: "🎧", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500", category: "الإكسسوارات", stock: 25, desc: "أفضل سماعات لإلغاء الضوضاء." }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('noorAlShamsProducts')) || defaultProducts;
+        if (!localStorage.getItem('noorAlShamsProducts')) localStorage.setItem('noorAlShamsProducts', JSON.stringify(products));
+
+        function formatIQD(amount) { return amount.toLocaleString('ar-IQ') + " د.ع"; }
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('noorAlShamsCart')) || [];
+            document.getElementById('cartCount').innerText = cart.reduce((sum, item) => sum + item.qty, 0);
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = products.map(p => `
+                <div class="product-card" onclick="window.location.href='product.html?id=${p.id}'">
+                    ${p.image ? `<img src="${p.image}" class="product-image">` : `<div class="product-emoji">${p.emoji}</div>`}
+                    <h3 class="product-title">${p.name}</h3>
+                    <div class="product-price">${formatIQD(p.price)}</div>
+                    <button class="add-to-cart" onclick="event.stopPropagation(); addToCart(${p.id}, '${p.name}', ${p.price}, '${p.emoji}', '${p.image || ''}')">أضف إلى السلة 🛒</button>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(id, name, price, emoji, image) {
+            let cart = JSON.parse(localStorage.getItem('noorAlShamsCart')) || [];
+            const existing = cart.find(item => item.id === id);
+            if (existing) existing.qty += 1;
+            else cart.push({ id, name, price, emoji, image: image || null, qty: 1 });
+            
+            localStorage.setItem('noorAlShamsCart', JSON.stringify(cart));
+            updateCartCount();
+            
+            const toast = document.getElementById('toast');
+            toast.innerText = `✅ تمت إضافة "${name}" إلى السلة!`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        window.onload = () => { renderProducts(); updateCartCount(); };
+    </script>
+</body>
+</html>

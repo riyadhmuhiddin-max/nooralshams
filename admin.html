@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | متجر نور الشمس ☀️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #FFA000; --primary-dark: #FF8F00; --bg: #F9FAFB; --text: #111827; --text-light: #6B7280; --success: #10B981; --danger: #EF4444; --info: #3B82F6; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); }
+        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #FFA000, #FF8F00); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .login-screen.hidden { display: none; }
+        .login-box { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
+        .login-box input { width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 8px; font-family: inherit; margin-bottom: 1rem; }
+        .login-box button { width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; }
+        header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 1rem 2rem; }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); text-decoration: none; }
+        .tabs { max-width: 1400px; margin: 2rem auto 0; padding: 0 1rem; display: flex; gap: 0.5rem; border-bottom: 2px solid #E5E7EB; }
+        .tab { padding: 0.75rem 1.5rem; background: none; border: none; font-family: inherit; font-size: 1rem; font-weight: 600; color: var(--text-light); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .tab.active { color: var(--primary-dark); border-bottom-color: var(--primary); }
+        main { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .stat-value { font-size: 1.75rem; font-weight: 800; margin-top: 0.5rem; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .search-box { flex: 1; min-width: 250px; padding: 0.75rem 1rem; border: 1px solid #D1D5DB; border-radius: 8px; font-family: inherit; }
+        .add-btn { background: var(--primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; }
+        .table-container { background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { padding: 1rem; text-align: right; font-weight: 700; color: var(--text-light); font-size: 0.9rem; border-bottom: 1px solid #E5E7EB; background: #F9FAFB; }
+        td { padding: 1rem; border-bottom: 1px solid #F3F4F6; font-size: 0.95rem; }
+        .product-cell { display: flex; align-items: center; gap: 0.75rem; }
+        .product-img { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; background: #F3F4F6; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0.4rem 0.75rem; border-radius: 6px; font-family: inherit; font-size: 0.85rem; font-weight: 600; margin: 0 0.15rem; }
+        .edit-btn { background: #DBEAFE; color: var(--info); }
+        .delete-btn { background: #FEE2E2; color: var(--danger); }
+        .status-badge { padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; display: inline-block; }
+        .status-new { background: #DBEAFE; color: var(--info); }
+        .status-processing { background: #FEF3C7; color: #D97706; }
+        .status-delivered { background: #D1FAE5; color: var(--success); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: white; border-radius: 20px; padding: 2rem; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.95rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 8px; font-family: inherit; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+        .btn-primary { flex: 1; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; }
+        .btn-secondary { flex: 1; background: #F3F4F6; color: var(--text); border: none; padding: 0.75rem; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <div style="font-size: 3rem; margin-bottom: 0.5rem;">☀️</div>
+            <h1>لوحة التحكم</h1>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">أدخل كلمة المرور للوصول</p>
+            <input type="password" id="passwordInput" placeholder="كلمة المرور" onkeypress="if(event.key==='Enter') login()">
+            <button onclick="login()">دخول</button>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-light);">الافتراضية: <strong>admin123</strong></p>
+        </div>
+    </div>
+
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">☀️ متجر نور الشمس</a>
+            <button class="action-btn delete-btn" onclick="logout()" style="padding: 0.5rem 1rem;">🚪 خروج</button>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('dashboard')">📊 لوحة المعلومات</button>
+        <button class="tab" onclick="switchTab('products')">📦 المنتجات</button>
+        <button class="tab" onclick="switchTab('orders')">🛒 الطلبات</button>
+    </div>
+
+    <main>
+        <div class="tab-content active" id="dashboard">
+            <div class="stats-grid">
+                <div class="stat-card"><div style="font-size:2rem">📦</div><div style="color:var(--text-light)">عدد المنتجات</div><div class="stat-value" id="statProducts">0</div></div>
+                <div class="stat-card"><div style="font-size:2rem">🛒</div><div style="color:var(--text-light)">إجمالي الطلبات</div><div class="stat-value" id="statOrders">0</div></div>
+                <div class="stat-card"><div style="font-size:2rem">💰</div><div style="color:var(--text-light)">إجمالي المبيعات</div><div class="stat-value" id="statSales">0 د.ع</div></div>
+                <div class="stat-card"><div style="font-size:2rem">⏳</div><div style="color:var(--text-light)">طلبات جديدة</div><div class="stat-value" id="statNewOrders">0</div></div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="products">
+            <div class="toolbar">
+                <input type="text" class="search-box" id="productSearch" placeholder="🔍 ابحث عن منتج..." oninput="renderProducts()">
+                <button class="add-btn" onclick="openProductModal()">+ إضافة منتج جديد</button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>المنتج</th><th>الفئة</th><th>السعر</th><th>المخزون</th><th>إجراءات</th></tr></thead>
+                    <tbody id="productsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="orders">
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>رقم الطلب</th><th>العميل</th><th>الهاتف</th><th>المبلغ</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+                    <tbody id="ordersTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Product -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">إضافة منتج جديد</h2>
+                <button class="action-btn" onclick="closeProductModal()" style="font-size:1.5rem">✕</button>
+            </div>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <input type="hidden" id="productId">
+                <div class="form-row">
+                    <div class="form-group"><label>اسم المنتج *</label><input type="text" id="productName" required></div>
+                    <div class="form-group"><label>الفئة *</label>
+                        <select id="productCategory" required>
+                            <option>الهواتف</option><option>اللابتوبات</option><option>الإكسسوارات</option><option>الطابعات</option><option>الكاميرات</option><option>معدات التصوير</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>السعر (بالدينار) *</label><input type="number" id="productPrice" required min="0"></div>
+                    <div class="form-group"><label>المخزون *</label><input type="number" id="productStock" required min="0" value="10"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>الأيقونة (إيموجي)</label><input type="text" id="productEmoji" value="📦"></div>
+                    <div class="form-group"><label>رابط الصورة (اختياري)</label><input type="url" id="productImage" placeholder="https://..."></div>
+                </div>
+                <div class="form-group"><label>الوصف</label><textarea id="productDesc" rows="3"></textarea></div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn-primary">💾 حفظ</button>
+                    <button type="button" class="btn-secondary" onclick="closeProductModal()">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Order Details -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>تفاصيل الطلب</h2>
+                <button class="action-btn" onclick="closeOrderModal()" style="font-size:1.5rem">✕</button>
+            </div>
+            <div id="orderDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = 'admin123';
+        let products = JSON.parse(localStorage.getItem('noorAlShamsProducts')) || [];
+        let orders = JSON.parse(localStorage.getItem('noorAlShamsOrders')) || [];
+
+        function seedData() {
+            if (products.length === 0) {
+                products = [
+                    { id: 1, name: "آيفون 15 برو ماكس 256GB", price: 1750000, emoji: "📱", image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=500", category: "الهواتف", stock: 15, desc: "أحدث هواتف آبل." },
+                    { id: 2, name: "سامسونج جالاكسي S24 ألترا", price: 1650000, emoji: "📱", image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500", category: "الهواتف", stock: 20, desc: "قوة الذكاء الاصطناعي." },
+                    { id: 3, name: "ماك بوك برو M3", price: 2100000, emoji: "💻", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500", category: "اللابتوبات", stock: 8, desc: "أداء خارق." }
+                ];
+                localStorage.setItem('noorAlShamsProducts', JSON.stringify(products));
+            }
+        }
+
+        function login() {
+            if (document.getElementById('passwordInput').value === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                document.getElementById('loginScreen').classList.add('hidden');
+                renderAll();
+            } else {
+                alert('كلمة المرور غير صحيحة');
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('adminLoggedIn');
+            location.reload();
+        }
+
+        function checkAuth() {
+            if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+                document.getElementById('loginScreen').classList.add('hidden');
+                renderAll();
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function formatIQD(amount) { return amount.toLocaleString('ar-IQ') + " د.ع"; }
+
+        function renderAll() {
+            // Dashboard
+            document.getElementById('statProducts').innerText = products.length;
+            document.getElementById('statOrders').innerText = orders.length;
+            document.getElementById('statSales').innerText = formatIQD(orders.reduce((sum, o) => sum + o.total, 0));
+            document.getElementById('statNewOrders').innerText = orders.filter(o => o.status === 'new').length;
+
+            // Products
+            const search = document.getElementById('productSearch').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(search) || p.category.toLowerCase().includes(search));
+            document.getElementById('productsTable').innerHTML = filtered.map(p => `
+                <tr>
+                    <td><div class="product-cell">${p.image ? `<img src="${p.image}" class="product-img">` : `<span style="font-size:1.5rem">${p.emoji}</span>`}<div><div style="font-weight:700">${p.name}</div><div style="font-size:0.8rem;color:var(--text-light)">ID: ${p.id}</div></div></div></td>
+                    <td>${p.category}</td>
+                    <td><strong>${formatIQD(p.price)}</strong></td>
+                    <td>${p.stock}</td>
+                    <td>
+                        <button class="action-btn edit-btn" onclick="editProduct(${p.id})">✏️ تعديل</button>
+                        <button class="action-btn delete-btn" onclick="deleteProduct(${p.id})">🗑️ حذف</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Orders
+            const statusMap = { 'new': 'جديد', 'processing': 'قيد التجهيز', 'delivered': 'تم التوصيل', 'cancelled': 'ملغي' };
+            const statusClassMap = { 'new': 'status-new', 'processing': 'status-processing', 'delivered': 'status-delivered', 'cancelled': 'status-cancelled' };
+            
+            document.getElementById('ordersTable').innerHTML = orders.slice().reverse().map(o => `
+                <tr>
+                    <td><strong>${o.orderNumber}</strong></td>
+                    <td>${o.fullName}</td>
+                    <td dir="ltr" style="text-align:right">${o.phone}</td>
+                    <td><strong>${formatIQD(o.total)}</strong></td>
+                    <td>
+                        <select onchange="updateOrderStatus('${o.orderNumber}', this.value)" style="padding:0.3rem; border-radius:6px; border:1px solid #D1D5DB; font-family:inherit;">
+                            <option value="new" ${o.status==='new'?'selected':''}>جديد</option>
+                            <option value="processing" ${o.status==='processing'?'selected':''}>قيد التجهيز</option>
+                            <option value="delivered" ${o.status==='delivered'?'selected':''}>تم التوصيل</option>
+                            <option value="cancelled" ${o.status==='cancelled'?'selected':''}>ملغي</option>
+                        </select>
+                    </td>
+                    <td><button class="action-btn edit-btn" onclick="viewOrder('${o.orderNumber}')">👁️ عرض</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function openProductModal(product = null) {
+            document.getElementById('productModal').classList.add('show');
+            document.getElementById('productForm').reset();
+            if (product) {
+                document.getElementById('modalTitle').innerText = 'تعديل منتج';
+                document.getElementById('productId').value = product.id;
+                document.getElementById('productName').value = product.name;
+                document.getElementById('productCategory').value = product.category;
+                document.getElementById('productPrice').value = product.price;
+                document.getElementById('productStock').value = product.stock;
+                document.getElementById('productEmoji').value = product.emoji;
+                document.getElementById('productImage').value = product.image || '';
+                document.getElementById('productDesc').value = product.desc || '';
+            } else {
+                document.getElementById('modalTitle').innerText = 'إضافة منتج جديد';
+                document.getElementById('productId').value = '';
+            }
+        }
+
+        function closeProductModal() { document.getElementById('productModal').classList.remove('show'); }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('productId').value;
+            const data = {
+                name: document.getElementById('productName').value,
+                category: document.getElementById('productCategory').value,
+                price: parseInt(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value),
+                emoji: document.getElementById('productEmoji').value || '📦',
+                image: document.getElementById('productImage').value || null,
+                desc: document.getElementById('productDesc').value
+            };
+
+            if (id) {
+                const index = products.findIndex(p => p.id == id);
+                products[index] = { ...products[index], ...data };
+            } else {
+                const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+                products.push({ id: newId, ...data });
+            }
+            localStorage.setItem('noorAlShamsProducts', JSON.stringify(products));
+            renderAll();
+            closeProductModal();
+        }
+
+        function editProduct(id) { openProductModal(products.find(p => p.id === id)); }
+        function deleteProduct(id) {
+            if (confirm('حذف هذا المنتج؟')) {
+                products = products.filter(p => p.id !== id);
+                localStorage.setItem('noorAlShamsProducts', JSON.stringify(products));
+                renderAll();
+            }
+        }
+
+        function updateOrderStatus(orderNumber, newStatus) {
+            const order = orders.find(o => o.orderNumber === orderNumber);
+            if (order) {
+                order.status = newStatus;
+                localStorage.setItem('noorAlShamsOrders', JSON.stringify(orders));
+                renderAll();
+            }
+        }
+
+        function viewOrder(orderNumber) {
+            const o = orders.find(ord => ord.orderNumber === orderNumber);
+            if (!o) return;
+            let itemsHTML = o.items.map(i => `<div style="display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #F3F4F6;"><span>${i.emoji} ${i.name} × ${i.qty}</span><strong>${formatIQD(i.price * i.qty)}</strong></div>`).join('');
+            
+            document.getElementById('orderDetails').innerHTML = `
+                <div style="background:#F9FAFB; padding:1rem; border-radius:10px; margin-bottom:1rem; font-size:0.9rem;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+                        <div><strong>رقم الطلب:</strong> ${o.orderNumber}</div>
+                        <div><strong>التاريخ:</strong> ${new Date(o.createdAt).toLocaleDateString('ar-IQ')}</div>
+                        <div><strong>الاسم:</strong> ${o.fullName}</div>
+                        <div><strong>الهاتف:</strong> <span dir="ltr">${o.phone}</span></div>
+                        <div><strong>المحافظة:</strong> ${o.governorate}</div>
+                        <div><strong>القضاء:</strong> ${o.district}</div>
+                        <div style="grid-column:span 2"><strong>المنطقة:</strong> ${o.zone}</div>
+                        <div style="grid-column:span 2"><strong>نقطة دالة:</strong> ${o.landmark}</div>
+                        <div><strong>الدفع:</strong> ${o.paymentMethod}</div>
+                    </div>
+                </div>
+                <h4 style="margin-bottom:0.75rem">المنتجات:</h4>
+                ${itemsHTML}
+                <div style="margin-top:1rem; padding-top:1rem; border-top:2px solid #E5E7EB; display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800;">
+                    <span>الإجمالي:</span><span style="color:var(--primary-dark)">${formatIQD(o.total)}</span>
+                </div>
+            `;
+            document.getElementById('orderModal').classList.add('show');
+        }
+
+        function closeOrderModal() { document.getElementById('orderModal').classList.remove('show'); }
+
+        seedData();
+        checkAuth();
+    </script>
+</body>
+</html>

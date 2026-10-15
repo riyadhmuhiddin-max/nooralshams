@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الطلب | متجر نور الشمس ☀️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #FFA000; --primary-dark: #FF8F00; --bg: #F9FAFB; --text: #111827; --text-light: #6B7280; --success: #10B981; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg); color: var(--text); }
+        header { background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 1rem 2rem; }
+        .nav-container { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); text-decoration: none; }
+        main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .page-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 1.5rem; }
+        .checkout-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 2rem; }
+        .form-section { background: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .section-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 2px solid #F3F4F6; padding-bottom: 0.5rem; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.95rem; }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 1px solid #D1D5DB; border-radius: 8px; font-family: inherit; font-size: 1rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .hint { font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem; }
+        .payment-options { display: flex; flex-direction: column; gap: 0.75rem; }
+        .payment-option { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 2px solid #E5E7EB; border-radius: 10px; cursor: pointer; }
+        .payment-option:hover, .payment-option.selected { border-color: var(--primary); background: #FFFBF0; }
+        .payment-option input { display: none; }
+        .order-summary { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); height: fit-content; position: sticky; top: 100px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; color: var(--text-light); }
+        .summary-row.total { border-top: 2px solid #E5E7EB; padding-top: 1rem; margin-top: 1rem; font-size: 1.25rem; font-weight: 800; }
+        .submit-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 1rem; border-radius: 12px; font-family: inherit; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 1rem; }
+        .submit-btn:hover { background: var(--primary-dark); }
+        .submit-btn:disabled { background: #D1D5DB; cursor: not-allowed; }
+        .success-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .success-modal.show { display: flex; }
+        .modal-content { background: white; padding: 2.5rem; border-radius: 20px; text-align: center; max-width: 400px; width: 90%; }
+        @media (max-width: 768px) { .checkout-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">☀️ متجر نور الشمس</a>
+        </div>
+    </header>
+    <main>
+        <h1 class="page-title">1. إتمام الطلب</h1>
+        <div class="checkout-grid">
+            <div>
+                <form id="checkoutForm">
+                    <div class="form-section">
+                        <h3 class="section-title">معلومات الاتصال</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>الاسم الكامل *</label>
+                                <input type="text" id="fullName" required placeholder="مثال: أحمد محمد">
+                            </div>
+                            <div class="form-group">
+                                <label>رقم الهاتف (عراقي) *</label>
+                                <input type="tel" id="phone" required placeholder="07xxxxxxxxx" pattern="07[0-9]{9}" title="يجب أن يبدأ بـ 07 ويتكون من 11 رقماً">
+                                <div class="hint">سيتم التواصل معك عبر هذا الرقم</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <h3 class="section-title">عنوان التوصيل</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>المحافظة *</label>
+                                <select id="governorate" required>
+                                    <option value="">اختر المحافظة</option>
+                                    <option>بغداد</option><option>البصرة</option><option>نينوى</option><option>أربيل</option><option>السليمانية</option><option>كركوك</option><option>الأنبار</option><option>بابل</option><option>ديالى</option><option>كربلاء</option><option>النجف</option><option>واسط</option><option>المثنى</option><option>القادسية</option><option>ذي قار</option><option>ميسان</option><option>صلاح الدين</option><option>دهوك</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>القضاء / المدينة *</label>
+                                <input type="text" id="district" required placeholder="مثال الكرادة، المنصور">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>المنطقة / المحلة *</label>
+                            <input type="text" id="zone" required placeholder="مثال: شارع 14 رمضان">
+                        </div>
+                        <div class="form-group">
+                            <label>أقرب نقطة دالة (مهم جداً) *</label>
+                            <input type="text" id="landmark" required placeholder="مثال: مقابل مسجد الإمام علي">
+                        </div
+                    </div>
+                    <div class="form-section">
+                        <h3 class="section-title">طريقة الدفع</h3>
+                        <div class="payment-options">
+                            <label class="payment-option selected" onclick="selectPayment(this, 'cod')">
+                                <input type="radio" name="payment" value="cod" checked>
+                                <span style="font-size:1.5rem">💵</span>
+                                <div><h4>الدفع عند الاستلام (COD)</h4><p style="font-size:0.85rem; color:var(--text-light)">ادفع نقداً أو عبر POS عند الوصول</p></div>
+                            </label>
+                            <label class="payment-option" onclick="selectPayment(this, 'zaincash')">
+                                <input type="radio" name="payment" value="zaincash">
+                                <span style="font-size:1.5rem">📱</span>
+                                <div><h4>زين كاش (ZainCash)</h4><p style="font-size:0.85rem; color:var(--text-light)">الدفع الفوري عبر المحف电子ة</p></div>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div>
+                <div class="order-summary">
+                    <h3 class="section-title" style="border:none; padding:0;">ملخص الطلب</h3>
+                    <div id="summaryItems" style="margin-bottom: 1rem; max-height: 200px; overflow-y: auto;"></div>
+                    <div class="summary-row"><span>المجموع الفرعي</span><span id="subtotal">0 د.ع</span></div>
+                    <div class="summary-row"><span>رسوم الشحن</span><span id="shipping">0 د.ع</span></div>
+                    <div class="summary-row total"><span>الإجمالي النهائي</span><span id="total" style="color: var(--primary-dark);">0 د.ع</span></div>
+                    <button type="button" class="submit-btn" id="submitBtn" onclick="submitOrder()">تأكيد الطلب ✅</button>
+                    <a href="cart.html" style="display: block; text-align: center; margin-top: 1rem; color: var(--text-light); text-decoration: none;">← العودة للسلة</a>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div class="success-modal" id="successModal">
+        <div class="modal-content">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
+            <h2 style="margin-bottom: 0.5rem;">تم استلام طلبك بنجاح!</h2>
+            <p style="color: var(--text-light); margin-bottom: 1rem;">رقم طلبك هو: <strong id="orderNumber" style="color: var(--primary-dark);"></strong></p>
+            <p style="font-size: 0.9rem; color: var(--text-light);">سيتواصل معك فريقنا قريباً لتأكيد التوصيل.</p>
+            <button style="background: var(--success); color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; font-family: inherit; font-weight: 700; cursor: pointer; margin-top: 1.5rem;" onclick="window.location.href='index.html'">العودة للرئيسية</button>
+        </div>
+    </div>
+
+    <script>
+        function formatIQD(amount) { return amount.toLocaleString('ar-IQ') + " د.ع"; }
+        const cart = JSON.parse(localStorage.getItem('noorAlShamsCart')) || [];
+        if (cart.length === 0) window.location.href = 'cart.html';
+
+        let subtotal = 0;
+        const summaryContainer = document.getElementById('summaryItems');
+        cart.forEach(item => {
+            subtotal += item.price * item.qty;
+            summaryContainer.innerHTML += `<div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.5rem;"><span>${item.emoji} ${item.name} (x${item.qty})</span><span style="font-weight: 600;">${formatIQD(item.price * item.qty)}</span></div>`;
+        });
+
+        const shipping = subtotal > 150000 ? 0 : 5000;
+        const total = subtotal + shipping;
+        document.getElementById('subtotal').innerText = formatIQD(subtotal);
+        document.getElementById('shipping').innerText = shipping === 0 ? 'مجاني 🎉' : formatIQD(shipping);
+        document.getElementById('total').innerText = formatIQD(total);
+
+        function selectPayment(element, method) {
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            element.querySelector('input').checked = true;
+        }
+
+        function submitOrder() {
+            const form = document.getElementById('checkoutForm');
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = 'جاري معالجة الطلب... ⏳';
+
+            setTimeout(() => {
+                const orderNum = 'NS-' + Date.now().toString().slice(-6);
+                const paymentLabels = { cod: 'الدفع عند الاستلام', zaincash: 'زين كاش' };
+                const paymentMethod = paymentLabels[document.querySelector('input[name="payment"]:checked').value] || 'غير محدد';
+
+                const newOrder = {
+                    orderNumber: orderNum,
+                    fullName: document.getElementById('fullName').value,
+                    phone: document.getElementById('phone').value,
+                    governorate: document.getElementById('governorate').value,
+                    district: document.getElementById('district').value,
+                    zone: document.getElementById('zone').value,
+                    landmark: document.getElementById('landmark').value,
+                    paymentMethod: paymentMethod,
+                    items: cart.map(i => ({ id: i.id, name: i.name, price: i.price, emoji: i.emoji, qty: i.qty })),
+                    subtotal, shipping, total,
+                    status: 'new',
+                    createdAt: new Date().toISOString()
+                };
+
+                // 1. حفظ الطلب
+                let orders = JSON.parse(localStorage.getItem('noorAlShamsOrders')) || [];
+                orders.push(newOrder);
+                localStorage.setItem('noorAlShamsOrders', JSON.stringify(orders));
+
+                // 2. خصم المخزون
+                let currentProducts = JSON.parse(localStorage.getItem('noorAlShamsProducts')) || [];
+                cart.forEach(cartItem => {
+                    let p = currentProducts.find(pr => pr.id === cartItem.id);
+                    if (p) p.stock = Math.max(0, p.stock - cartItem.qty);
+                });
+                localStorage.setItem('noorAlShamsProducts', JSON.stringify(currentProducts));
+
+                // 3. مسح السلة
+                localStorage.removeItem('noorAlShamsCart');
+
+                // 4. إظهار النجاح
+                document.getElementById('orderNumber').innerText = orderNum;
+                document.getElementById('successModal').classList.add('show');
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
